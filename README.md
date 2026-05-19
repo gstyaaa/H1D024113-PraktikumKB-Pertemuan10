@@ -1,10 +1,10 @@
 # Algoritma Genetika - Knapsack Problem (Pertemuan 10)
 
-Repositori ini berisi implementasi sederhana **Algoritma Genetika (Genetic Algorithm)** untuk menyelesaikan **Knapsack Problem**. Program ini ditulis dalam bahasa Python dan dirancang untuk mencari kombinasi barang yang memberikan keuntungan maksimal tanpa melebihi kapasitas beban tertentu.
+Repositori ini berisi implementasi **Algoritma Genetika (Genetic Algorithm)** untuk menyelesaikan **Knapsack Problem**. Program ini ditulis dalam bahasa Python untuk mencari kombinasi barang dengan keuntungan maksimal tanpa melebihi kapasitas beban yang ditentukan.
 
 ## Deskripsi Masalah
 
-Terdapat sejumlah barang yang masing-masing memiliki nilai keuntungan (profit) dan ukuran (berat/volume). Tujuannya adalah memilih kombinasi barang yang akan dimasukkan ke dalam wadah (knapsack) dengan batasan kapasitas maksimal agar total keuntungan yang didapat adalah yang tertinggi.
+Terdapat sejumlah barang yang masing-masing memiliki nilai keuntungan (profit) dan ukuran (berat/volume). Tujuannya adalah memilih kombinasi barang yang memberikan total keuntungan tertinggi dengan batasan kapasitas maksimal gudang.
 
 ### Data Barang
 | Nama Barang | Keuntungan | Ukuran |
@@ -19,38 +19,39 @@ Terdapat sejumlah barang yang masing-masing memiliki nilai keuntungan (profit) d
 
 ## Parameter Algoritma Genetika
 
-Dalam script `algen.py`, parameter yang digunakan adalah:
-- **Jumlah Populasi:** 20 individu per generasi.
+- **Jumlah Populasi:** 20 individu.
 - **Jumlah Generasi:** 50 iterasi.
-- **Representasi Genetik:** Biner (0 = tidak diambil, 1 = diambil).
+- **Probabilitas Crossover:** 0.8.
+- **Probabilitas Mutasi:** 0.1.
+- **Representasi Genetik:** Biner (1 = diambil, 0 = tidak diambil).
 
 ## Struktur Kode
 
-1.  **`fitness(kromosom)`**: Menghitung total keuntungan. Jika total ukuran melebihi kapasitas, nilai fitness menjadi 0.
-2.  **`inisialisasi_populasi()`**: Membuat populasi awal secara acak.
-3.  **`selection(populasi, fitnesses)`**: Memilih induk menggunakan metode *Roulette Wheel Selection*.
-4.  **`crossover(parent1, parent2)`**: Melakukan persilangan satu titik (*single-point crossover*) untuk menghasilkan keturunan.
-5.  **`mutation(kromosom)`**: Melakukan mutasi gen (bit-flip) secara acak untuk menjaga variasi genetik.
+1.  **`hitung_fitness(kromosom)`**: Menghitung total keuntungan. Jika total ukuran melebihi kapasitas gudang, nilai fitness menjadi 0.
+2.  **`inisialisasi_populasi()`**: Menghasilkan populasi awal kromosom biner secara acak.
+3.  **`tournament_selection()`**: Memilih individu terbaik dari sub-grup acak sebagai induk.
+4.  **`one_point_crossover()`**: Melakukan persilangan satu titik antara dua induk untuk menghasilkan keturunan.
+5.  **`inversion_mutation()`**: Melakukan mutasi dengan membalik urutan segmen gen dalam kromosom.
 
 ## Cara Menjalankan
 
 ### Prasyarat
-- Pastikan Anda sudah menginstal Python (versi 3.x direkomendasikan).
+- Python 3.x
 
 ### Langkah-langkah
-1.  Buka terminal atau command prompt.
-2.  Arahkan ke direktori proyek ini.
-3.  Jalankan perintah berikut:
+1.  Buka terminal/command prompt.
+2.  Arahkan ke direktori proyek.
+3.  Jalankan perintah:
     ```bash
     python algen.py
     ```
 
 ## Contoh Output
-Setelah dijalankan, program akan menampilkan:
-- Kromosom terbaik (kombinasi biner).
-- Keuntungan maksimum yang diperoleh.
-- Daftar barang yang terpilih beserta detail keuntungan dan ukurannya.
-- Total ukuran dari barang-barang yang terpilih.
+Program akan menampilkan:
+- Kromosom terbaik yang ditemukan.
+- Keuntungan maksimum.
+- Daftar barang yang terpilih.
+- Total ukuran beban yang masuk ke gudang.
 
 ---
 *Dibuat untuk keperluan praktikum Kecerdasan Buatan (KB) - Pertemuan 10.*
