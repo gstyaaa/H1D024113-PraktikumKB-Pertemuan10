@@ -8,167 +8,163 @@ barang = [
     ("Barang5", 35, 7)
 ]
 
-kapasitas = 15
+kapasitas_gudang = 15
 
-JUMLAH_POPULASI = 20
-JUMLAH_GENERASI = 50
+jumlah_generasi = 50
+jumlah_populasi = 20
 
+prob_crossover = 0.8
+prob_mutasi = 0.1
 
-def fitness(kromosom):
+jumlah_gen = len(barang)
 
-    total_keuntungan = 0
-    total_ukuran = 0
-
-    for i in range(len(kromosom)):
-
-        if kromosom[i] == 1:
-
-            total_keuntungan += barang[i][1]
-            total_ukuran += barang[i][2]
-
-    if total_ukuran > kapasitas:
-        return 0
-
-    return total_keuntungan
-
-
-def inisialisasi_populasi():
-
+def inisialisasi_populasi(jumlah_populasi, jumlah_gen):
     populasi = []
-
-    for _ in range(JUMLAH_POPULASI):
-
-        individu = [
-
+    for _ in range(jumlah_populasi):
+        kromosom = [
             random.randint(0, 1)
-
-            for _ in range(len(barang))
+            for _ in range(jumlah_gen)
         ]
-
-        populasi.append(individu)
-
+        populasi.append(kromosom)
     return populasi
 
+def hitung_fitness(kromosom):
+    total_keuntungan = 0
+    total_ukuran = 0
+    for i in range(len(kromosom)):
+        if kromosom[i] == 1:
+            total_keuntungan += barang[i][1]
+            total_ukuran += barang[i][2]
+    if total_ukuran > kapasitas_gudang:
+        return 0
+    return total_keuntungan
 
-def selection(populasi, fitnesses):
+def tournament_selection(
+    populasi,
+    fitness_populasi,
+    ukuran_turnamen=3
+):
+    peserta = random.sample(
+        list(zip(populasi, fitness_populasi)),
+        ukuran_turnamen
+    )
+    peserta = sorted(
+        peserta,
+        key=lambda x: x[1],
+        reverse=True
+    )
+    return peserta[0][0]
 
-    total = sum(fitnesses)
-
-    if total == 0:
-        return random.choice(populasi)
-
-    r = random.uniform(0, total)
-
-    current = 0
-
-    for individu, fit in zip(populasi, fitnesses):
-
-        current += fit
-
-        if current >= r:
-            return individu
-
-
-def crossover(parent1, parent2):
-
-    titik = random.randint(
+def one_point_crossover(parent1, parent2):
+    titik_potong = random.randint(
         1,
         len(parent1)-1
     )
-
     anak1 = (
-        parent1[:titik]
-        + parent2[titik:]
+        parent1[:titik_potong]
+        + parent2[titik_potong:]
     )
-
     anak2 = (
-        parent2[:titik]
-        + parent1[titik:]
+        parent2[:titik_potong]
+        + parent1[titik_potong:]
     )
-
     return anak1, anak2
 
-
-def mutation(kromosom):
-
+def inversion_mutation(kromosom):
     kromosom = kromosom.copy()
-
-    i = random.randint(
+    posisi1 = random.randint(
         0,
+        len(kromosom)-2
+    )
+    posisi2 = random.randint(
+        posisi1 + 1,
         len(kromosom)-1
     )
-
-    kromosom[i] = 1 - kromosom[i]
-
+    kromosom[posisi1:posisi2] = list(
+        reversed(
+            kromosom[posisi1:posisi2]
+        )
+    )
     return kromosom
 
+populasi = inisialisasi_populasi(
+    jumlah_populasi,
+    jumlah_gen
+)
 
-populasi = inisialisasi_populasi()
+best_individu = None
+best_fitness = 0
 
-best = None
-best_fit = 0
-
-for generasi in range(JUMLAH_GENERASI):
-
-    fitnesses = [
-        fitness(ind)
-        for ind in populasi
+for generasi in range(jumlah_generasi):
+    fitness_populasi = [
+        hitung_fitness(individu)
+        for individu in populasi
     ]
+    best_generasi = max(fitness_populasi)
+    if best_generasi > best_fitness:
+        best_fitness = best_generasi
+        idx = fitness_populasi.index(
+            best_generasi
+        )
+        best_individu = populasi[idx]
 
-    for i in range(len(populasi)):
-
-        if fitnesses[i] > best_fit:
-
-            best_fit = fitnesses[i]
-            best = populasi[i]
-
-    populasi_baru = []
-
-    while len(populasi_baru) < JUMLAH_POPULASI:
-
-        parent1 = selection(
+    new_populasi = []
+    while len(new_populasi) < jumlah_populasi:
+        parent1 = tournament_selection(
             populasi,
-            fitnesses
+            fitness_populasi
         )
-
-        parent2 = selection(
+        parent2 = tournament_selection(
             populasi,
-            fitnesses
+            fitness_populasi
         )
 
-        anak1, anak2 = crossover(
-            parent1,
-            parent2
-        )
+        if random.random() < prob_crossover:
+            anak1, anak2 = one_point_crossover(
+                parent1,
+                parent2
+            )
+        else:
+            anak1 = parent1.copy()
+            anak2 = parent2.copy()
 
-        anak1 = mutation(anak1)
-        anak2 = mutation(anak2)
+        if random.random() < prob_mutasi:
+            anak1 = inversion_mutation(
+                anak1
+            )
+        if random.random() < prob_mutasi:
+            anak2 = inversion_mutation(
+                anak2
+            )
 
-        populasi_baru.extend([
+        new_populasi.extend([
             anak1,
             anak2
         ])
-
-    populasi = populasi_baru[:JUMLAH_POPULASI]
+    populasi = new_populasi[
+        :jumlah_populasi
+    ]
 
 print("\n=== HASIL TERBAIK ===")
-print("Kromosom:", best)
-print("Keuntungan Maksimum:", best_fit)
-
-print("\nBarang Terpilih:")
-
+print(
+    "Kromosom Terbaik:",
+    best_individu
+)
+print(
+    "Keuntungan Maksimum:",
+    best_fitness
+)
+print("\nBarang yang Dipilih:")
 total_ukuran = 0
-
-for i in range(len(best)):
-
-    if best[i] == 1:
-
+for i in range(len(best_individu)):
+    if best_individu[i] == 1:
         print(
             f"{barang[i][0]}"
             f" | Keuntungan={barang[i][1]}"
             f" | Ukuran={barang[i][2]}"
         )
-
         total_ukuran += barang[i][2]
-
-print("\nTotal Ukuran:", total_ukuran)
+print(
+    "\nTotal Ukuran:",
+    total_ukuran
+)
